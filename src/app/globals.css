@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* キーボード表示時のビューポート調整 */
+@supports (height: 100dvh) {
+  html,
+  body {
+    height: 100dvh;
+  }
+}
+
+/* テキストエリアのフォーカス時にズームしないようにする (iOS) */
+textarea,
+input[type="text"],
+input[type="email"] {
+  font-size: 16px;
+}
+
+/* PWA standalone モードでの調整 */
+@media all and (display-mode: standalone) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
