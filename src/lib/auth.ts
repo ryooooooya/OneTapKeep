@@ -1,9 +1,10 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import type { NextAuthConfig } from "next-auth";
-import { saveUserData, getUserData } from "@/lib/kv";
+import { saveUserData } from "@/lib/kv";
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
