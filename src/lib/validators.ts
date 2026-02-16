@@ -7,12 +7,8 @@ export const memoSchema = z.object({
     .max(10000, "メモが長すぎます（最大10,000文字）"),
 });
 
-export const keepEmailSchema = z.object({
-  keepEmailAddress: z
+export const passwordSchema = z.object({
+  password: z
     .string()
-    .email("有効なメールアドレスを入力してください")
-    .refine(
-      (email) => email.endsWith("@keep.google.com"),
-      "Keep用メールアドレス（@keep.google.com）を入力してください"
-    ),
+    .min(1, "パスワードを入力してください"),
 });

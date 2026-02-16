@@ -18,7 +18,7 @@ export async function GET() {
         success: true,
         data: {
           email: session.user?.email || "",
-          keepEmailAddress: "",
+          hasPassword: false,
         },
       });
     }
@@ -27,7 +27,7 @@ export async function GET() {
       success: true,
       data: {
         email: userData.email,
-        keepEmailAddress: userData.keepEmailAddress,
+        hasPassword: !!userData.googlePassword,
       },
     });
   } catch (error) {

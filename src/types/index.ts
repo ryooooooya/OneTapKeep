@@ -1,10 +1,7 @@
 // ユーザー情報 (Vercel KV)
 export interface UserData {
   email: string;
-  keepEmailAddress: string;
-  accessToken: string;
-  refreshToken: string;
-  tokenExpiry: number;
+  googlePassword: string; // 暗号化済み（アプリパスワード推奨）
   createdAt: string;
   updatedAt: string;
 }
@@ -39,5 +36,5 @@ export type SendStatus = "idle" | "sending" | "success" | "error";
 // 設定データ
 export interface SettingsData {
   email: string;
-  keepEmailAddress: string;
+  hasPassword: boolean;
 }

@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export default function SetupPage() {
-  const [keepEmail, setKeepEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isChecking, setIsChecking] = useState(true);
   const router = useRouter();
   const { status } = useSession();
 
-  // 既にKeepメールアドレスが設定されていればメインへ
+  // 既にパスワードが設定されていればメインへ
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -22,7 +22,7 @@ export default function SetupPage() {
       fetch("/api/settings")
         .then((res) => res.json())
         .then((data) => {
-          if (data.success && data.data?.keepEmailAddress) {
+          if (data.success && data.data?.hasPassword) {
             router.push("/");
           } else {
             setIsChecking(false);
@@ -38,10 +38,10 @@ export default function SetupPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/settings/keep-email", {
+      const res = await fetch("/api/settings/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keepEmailAddress: keepEmail }),
+        body: JSON.stringify({ password }),
       });
 
       const data = await res.json();
@@ -74,38 +74,44 @@ export default function SetupPage() {
             初期設定
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Google Keepのメールアドレスを入力してください
+            Googleアカウントのパスワードまたはアプリパスワードを入力
           </p>
+        </div>
+
+        <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            セキュリティのため、アプリパスワードの使用を推奨します。
+          </p>
+          <a
+            href="https://myaccount.google.com/apppasswords"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-yellow-700 dark:text-yellow-300 underline mt-1 inline-block"
+          >
+            アプリパスワードの作成方法
+          </a>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
             <label
-              htmlFor="keep-email"
+              htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Keep用メールアドレス
+              パスワード
             </label>
             <input
-              id="keep-email"
-              type="email"
+              id="password"
+              type="password"
               required
-              value={keepEmail}
-              onChange={(e) => setKeepEmail(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="xxxxx@keep.google.com"
+              placeholder="Googleパスワードまたはアプリパスワード"
             />
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-              <p className="text-xs text-blue-700 dark:text-blue-300 font-medium mb-1">
-                Keep用メールアドレスの確認方法:
-              </p>
-              <ol className="text-xs text-blue-600 dark:text-blue-400 list-decimal list-inside space-y-1">
-                <li>Google Keepを開く</li>
-                <li>設定を開く</li>
-                <li>「メモとリストを追加」セクションを確認</li>
-                <li>表示されるメールアドレスをコピー</li>
-              </ol>
-            </div>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              このパスワードは暗号化して安全に保存されます
+            </p>
           </div>
 
           {error && (

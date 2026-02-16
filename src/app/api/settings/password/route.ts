@@ -1,12 +1,13 @@
 import { auth } from "@/lib/auth";
-import { updateKeepEmail } from "@/lib/kv";
-import { keepEmailSchema } from "@/lib/validators";
+import { saveUserData } from "@/lib/kv";
+import { encryptPassword } from "@/lib/crypto";
+import { passwordSchema } from "@/lib/validators";
 import { NextResponse } from "next/server";
 
 export async function PUT(request: Request) {
   try {
     const session = await auth();
-    if (!session?.userId) {
+    if (!session?.userId || !session?.user?.email) {
       return NextResponse.json(
         { success: false, error: "認証が必要です" },
         { status: 401 }
@@ -14,7 +15,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const parsed = keepEmailSchema.safeParse(body);
+    const parsed = passwordSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { success: false, error: parsed.error.errors[0].message },
@@ -22,12 +23,15 @@ export async function PUT(request: Request) {
       );
     }
 
-    await updateKeepEmail(session.userId, parsed.data.keepEmailAddress);
+    const encryptedPassword = encryptPassword(parsed.data.password);
 
-    return NextResponse.json({
-      success: true,
-      keepEmailAddress: parsed.data.keepEmailAddress,
+    await saveUserData(session.userId, {
+      email: session.user.email,
+      googlePassword: encryptedPassword,
+      createdAt: new Date().toISOString(),
     });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("API エラー:", error);
     return NextResponse.json(
