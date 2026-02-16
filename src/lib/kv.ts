@@ -24,10 +24,7 @@ export async function saveUserData(
 
   const updated: UserData = {
     email: "",
-    keepEmailAddress: "",
-    accessToken: "",
-    refreshToken: "",
-    tokenExpiry: 0,
+    googlePassword: "",
     createdAt: new Date().toISOString(),
     ...existing,
     ...data,
@@ -45,12 +42,12 @@ export async function getUserData(
   return await getRedis().get<UserData>(key);
 }
 
-// Keep用メールアドレスを更新
-export async function updateKeepEmail(
+// Googleパスワードを更新
+export async function updatePassword(
   userId: string,
-  keepEmailAddress: string
+  encryptedPassword: string
 ): Promise<void> {
-  await saveUserData(userId, { keepEmailAddress });
+  await saveUserData(userId, { googlePassword: encryptedPassword });
 }
 
 // 未送信メモを保存

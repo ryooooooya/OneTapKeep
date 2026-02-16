@@ -43,9 +43,9 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-6">
-          Gmail APIを使用してKeepにメモを送信します。
+          Google Keepに直接メモを作成します。
           <br />
-          メール送信の権限が必要です。
+          基本的なプロフィール情報のみ使用します。
         </p>
       </div>
     </div>

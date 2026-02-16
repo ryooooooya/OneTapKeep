@@ -1,13 +1,13 @@
 import { auth } from "@/lib/auth";
-import { getUserData, saveUserData, savePendingMemo } from "@/lib/kv";
-import { sendMemoToKeep, refreshAccessToken } from "@/lib/gmail";
+import { getUserData, savePendingMemo } from "@/lib/kv";
+import { decryptPassword } from "@/lib/crypto";
 import { memoSchema } from "@/lib/validators";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session?.userId) {
+    if (!session?.userId || !session?.user?.email) {
       return NextResponse.json(
         { success: false, error: "認証が必要です" },
         { status: 401 }
@@ -33,35 +33,36 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!userData.keepEmailAddress) {
+    if (!userData.googlePassword) {
       return NextResponse.json(
-        { success: false, error: "Keep用メールアドレスが設定されていません" },
+        { success: false, error: "パスワードが設定されていません" },
         { status: 400 }
       );
     }
 
-    // トークンの有効期限チェックとリフレッシュ
-    let accessToken = userData.accessToken;
+    // パスワードを復号化
+    const password = decryptPassword(userData.googlePassword);
 
-    if (Date.now() >= userData.tokenExpiry) {
-      try {
-        const refreshed = await refreshAccessToken(userData.refreshToken);
-        accessToken = refreshed.accessToken;
-        await saveUserData(session.userId, {
-          accessToken: refreshed.accessToken,
-          tokenExpiry: refreshed.expiresAt,
-        });
-      } catch {
-        return NextResponse.json(
-          { success: false, error: "認証の更新に失敗しました。再ログインしてください" },
-          { status: 401 }
-        );
-      }
-    }
-
-    // メール送信
+    // Python Serverless Functionを呼び出してKeepにメモを作成
     try {
-      await sendMemoToKeep(accessToken, userData.keepEmailAddress, content);
+      const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000";
+
+      const pythonRes = await fetch(`${baseUrl}/api/keep/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userData.email,
+          password,
+          content,
+        }),
+      });
+
+      if (!pythonRes.ok) {
+        const errorData = await pythonRes.json().catch(() => ({}));
+        throw new Error(errorData.error || "Keep APIの実行に失敗しました");
+      }
     } catch (error) {
       console.error("メモ送信エラー:", error);
       // 送信失敗時はKVに保存してリトライ用にする
