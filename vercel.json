@@ -5,7 +5,7 @@
   "installCommand": "npm install",
   "functions": {
     "api/keep/*.py": {
-      "runtime": "@vercel/python"
+      "runtime": "@vercel/python@6.12.0"
     }
   }
 }
